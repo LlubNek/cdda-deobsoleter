@@ -16,18 +16,26 @@ for a in ${!obsolete_mods[*]} ; do
 	echo Working on $a...
 	
 	# if an older version exists, remove it
-	rm -dfr "mods/$a"
+	rm -dfr "mods/obsolete-$a"
 	
 	# copy mod from default mods to user mods
-	cp -r "data/mods/$a" mods
+	mkdir "mods/obsolete-$a"
+	for b in "data/mods/$a/*"; do 
+		cp -ar $b "mods/obsolete-$a/"
+		done
+	
+	declare modinfo="mods/obsolete-$a/modinfo.json"
 	
 	# change the obsolete flag to false
-	sed -i '/obsolete/s/true/false/g' "mods/$a/modinfo.json"
+	sed -i '/obsolete/s/true/false/' $modinfo
+	
+	# change the name to inform user of obsolete status
+	sed -ri '0,/\}/{s/"name": "(.*?)"/"name": "[OBSOLETE] \1"/}' $modinfo
 	
 	# change the ident to avoid conflicts with the default mod
-	sed -i "/ident/s/${obsolete_mods[$a]}/OBSOLETE_${obsolete_mods[$a]}/" "mods/$a/modinfo.json"
+	sed -i "/ident/s/${obsolete_mods[$a]}/OBSOLETE_${obsolete_mods[$a]}/" $modinfo
 	
 	#change dependencies to refer to un-obsoleted user mods instead of obsolete default mods
-	sed -ri "/dependencies/s/$subst/OBSOLETE_\0/g" "mods/$a/modinfo.json"
+	sed -ri "/dependencies/s/$subst/OBSOLETE_\0/g" $modinfo
 	
 	done
