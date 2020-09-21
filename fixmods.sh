@@ -6,7 +6,7 @@ function join_by { local IFS="$1"; shift; echo "$*"; }
 # get a map of folder names to ids
 declare -A obsolete_mods
 for a in `grep -iPl '"obsolete":\s+true' data/mods/*/modinfo.json|sed -r "s/data\/mods\/(.*?)\/modinfo\.json/\1/"` ; do 
-	obsolete_mods[$a]=`grep -iPoh '(?<="ident": ").*?(?=")' data/mods/$a/modinfo.json`
+	obsolete_mods[$a]=`grep -iPoh '(?<="id": ").*?(?=")' data/mods/$a/modinfo.json`
 	done
 
 declare subst=`join_by \| ${obsolete_mods[*]}`
@@ -33,7 +33,7 @@ for a in ${!obsolete_mods[*]} ; do
 	sed -ri '0,/\}/{s/"name": "(.*?)"/"name": "[OBSOLETE] \1"/}' $modinfo
 	
 	# change the ident to avoid conflicts with the default mod
-	sed -i "/ident/s/${obsolete_mods[$a]}/OBSOLETE_${obsolete_mods[$a]}/" $modinfo
+	sed -i "/id/s/${obsolete_mods[$a]}/OBSOLETE_${obsolete_mods[$a]}/" $modinfo
 	
 	#change dependencies to refer to un-obsoleted user mods instead of obsolete default mods
 	sed -ri "/dependencies/s/$subst/OBSOLETE_\0/g" $modinfo
