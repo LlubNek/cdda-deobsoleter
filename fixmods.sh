@@ -2,14 +2,17 @@
 
 # https://stackoverflow.com/questions/1527049/how-can-i-join-elements-of-an-array-in-bash
 function join_by { local IFS="$1"; shift; echo "$*"; }
+function first { echo $1; }
 
 # get a map of folder names to ids
 declare -A obsolete_mods
 for a in `grep -iPl '"obsolete":\s+true' data/mods/*/modinfo.json|sed -r "s/data\/mods\/(.*?)\/modinfo\.json/\1/"` ; do 
-	obsolete_mods[$a]=`grep -iPoh '(?<="id": ").*?(?=")' data/mods/$a/modinfo.json`
+	tmp=`grep -iPoh '(?<="id": ").*?(?=")' data/mods/$a/modinfo.json`
+	obsolete_mods[$a]=`first $tmp`
 	done
 
 declare subst=`join_by \| ${obsolete_mods[*]}`
+echo Obsolete mods found\:  ${obsolete_mods[*]}
 
 mkdir -p mods
 for a in ${!obsolete_mods[*]} ; do 
